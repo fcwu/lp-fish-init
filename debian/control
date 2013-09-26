@@ -1,0 +1,29 @@
+Source: lp-fish-init
+Section: python
+Vcs-Bzr: lp:~oem-solutions-group/dell/lp-fish-init
+Priority: extra
+Build-Depends: cdbs (>= 0.4.43),
+ debhelper (>= 6),
+ python,
+ python-support (>= 0.6.4),
+ python-distutils-extra (>= 2.10)
+Maintainer: Doro Wu <doro.wu@canonical.com>
+Standards-Version: 3.9.3
+XS-Python-Version: current
+
+Package: lp-fish-init
+Architecture: all
+Depends: python (<< 3.0), python (>= 2.6),
+ ${misc:Depends},
+ ${python:Depends},
+ python-launchpadlib,
+ python-distutils-extra,
+ python-gtk2,
+ python-launchpadlib,
+ xsltproc,
+ xclip,
+ python-webdavlib,
+ lp-fish-tools,
+ lp-cli (>> 0.4 )
+Description: Provides fish-init command for OEM Dell enablement
+ UNKNOWN

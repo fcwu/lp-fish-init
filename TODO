@@ -1,0 +1,35 @@
+[commands]
+fish-init config tag ip
+fish-init modaliases
+fish-init openbugs
+fish-init manifest-rc
+fish-init manifest
+fish-init deploy
+fish-init recovery
+fish-init diff-package
+fish-init ssh
+fish-init scp
+fish-init install-recovery {*.fish*.gz, *.deb}
+fish-init uninstall-recovery {*.fish*.gz, *.deb}
+
+[flow]
+* put openssh-server
+* put keys
+* put modliases.sh
+* launch modaliases.sh -o ma.txt
+* pull ma.txt
+* update ma.txt to package list
+* insert default packages to ma.txt
+* put packages in ma.txt to oem-share if not exist
+* open bugs in launchpad according to ma.txt
+* create beta manifest: fish-manifest
+* deploy beta manifest
+  * checking somerville base image integration
+  * scp FISH in manifest
+  * extract FISH
+  * add auto-install configure
+  * ask dell-recovery
+  * create first manifest: fish-manifest
+* ibs-cli build
+* ibs-cli monitor and download
+

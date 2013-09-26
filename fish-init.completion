@@ -1,0 +1,50 @@
+# bash completion for fish-init
+
+have fish-init &&
+_fish_init()
+{
+    COMPREPLY=()
+    local cur prev
+    _get_comp_words_by_ref -n : cur prev
+
+#    _expand || return 0
+#
+#    case $prev in
+#        config)
+#            fish-init config help
+#            return 1
+#            ;;
+#        --log-dir|-z|--zsync-input)
+#            _filedir
+#            return 0
+#            ;;
+#        --log-level)
+#            COMPREPLY=( $( compgen -W 'debug info warning error critical' -- "$cur" ) )
+#            return 0
+#            ;;
+    esac
+
+    case $cur in
+#        -*)
+#            COMPREPLY=( $( compgen -W '-h --log-level --log-dir -p --project \
+#                -b -z --zsync-input -g' -- "$cur" ) )
+#            ;;
+        *)
+            COMPREPLY=( $( compgen -W 'config modaliases openbugs \
+                manifest-rc manifest deploy recovery ssh scp install-recovery \
+                uninstall-recovery ' -- "$cur" ) )
+            ;;
+
+    esac
+
+    return 0
+} &&
+complete -F _fish_init -o nospace fish-init
+
+# Local variables:
+# mode: shell-script
+# sh-basic-offset: 4
+# sh-indent-comment: t
+# indent-tabs-mode: nil
+# End:
+# ex: ts=4 sw=4 et filetype=sh
