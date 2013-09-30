@@ -1,1 +1,1 @@
-__all__ = ['config', 'modalias']
+__all__ = ['config', 'modalias', 'ssh', 'mount', 'umount']

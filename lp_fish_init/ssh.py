@@ -16,42 +16,32 @@
 import sys
 from command import CommandBase
 from settings import Settings
-
-# arguments and help
-# logging
+import subprocess
 
 
 class Command(CommandBase):
-    def set(self):
-        s = Settings()
-        s.ip = self.argv[1]
-        s.tag = self.argv[2]
-        s.commit()
-        self.get()
-
-    def get(self):
+    def ssh(self):
         settings = Settings()
-        print 'IP = {}'.format(settings.ip)
-        print 'LP Tag = {}'.format(settings.tag)
+        cmd = ['ssh', settings.ip, '-i',
+               '/usr/share/lp-fish-init/fish-init']
+        if len(self.argv) > 1:
+            cmd += self.argv[1:]
+        print ' '.join(cmd)
+        subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
-        if len(argv) == 1:
-            self.get()
+        if argv[0] == 'help':
+            self.help()
             return
-        if len(argv) == 3:
-            self.set()
-            return
-        self.help()
+        self.ssh()
 
     def help(self):
-        description = 'Set/Get current working target Launchpad tag and IP'
-        print 'Usage: fish-init {} [ip tag]'.format(self.argv[0])
-        print '    ' + description
+        print 'Usage: fish-init {} [command]'.format(self.argv[0])
         print 'Example:'
-        print '  $ fish-init {} 192.168.0.10 general-sff'.format(self.argv[0])
-        print '  $ fish-init {} '.format(self.argv[0])
-        print '  IP = 192.168.0.10'
-        print '  LP Tag = general-sff'
+        print '  # login to target'
+        print '    $ fish-init {}'.format(self.argv[0])
+        print '  # Run dpkg -l on target'
+        print '    $ fish-init {} dpkg -l'.format(self.argv[0])
 
         sys.exit(0)

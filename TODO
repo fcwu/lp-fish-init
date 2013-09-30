@@ -1,14 +1,21 @@
 [commands]
-fish-init config tag ip
+- fish-init config tag ip
 fish-init modaliases
 fish-init openbugs
-fish-init manifest-rc
-fish-init manifest
+fish-init manifest create
+  fish-manifest
 fish-init deploy
 fish-init recovery
+fish-init manifest commit
+  fish-manifest
 fish-init diff-package
-fish-init ssh
-fish-init scp
+- fish-init ssh
+- fish-init mount
+- fish-init umount
+x fish-init scp
+fish-init execute localscript
+  scp script
+  ssh run
 fish-init install-recovery {*.fish*.gz, *.deb}
 fish-init uninstall-recovery {*.fish*.gz, *.deb}
 

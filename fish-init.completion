@@ -22,7 +22,7 @@ _fish_init()
 #            COMPREPLY=( $( compgen -W 'debug info warning error critical' -- "$cur" ) )
 #            return 0
 #            ;;
-    esac
+#    esac
 
     case $cur in
 #        -*)
@@ -32,7 +32,7 @@ _fish_init()
         *)
             COMPREPLY=( $( compgen -W 'config modaliases openbugs \
                 manifest-rc manifest deploy recovery ssh scp install-recovery \
-                uninstall-recovery ' -- "$cur" ) )
+                uninstall-recovery mount umount' -- "$cur" ) )
             ;;
 
     esac

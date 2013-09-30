@@ -15,43 +15,24 @@
 
 import sys
 from command import CommandBase
-from settings import Settings
-
-# arguments and help
-# logging
+import subprocess
 
 
 class Command(CommandBase):
-    def set(self):
-        s = Settings()
-        s.ip = self.argv[1]
-        s.tag = self.argv[2]
-        s.commit()
-        self.get()
-
-    def get(self):
-        settings = Settings()
-        print 'IP = {}'.format(settings.ip)
-        print 'LP Tag = {}'.format(settings.tag)
+    def umount(self):
+        cmd = ['fusermount', '-u', 'mnt']
+        print ' '.join(cmd)
+        subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
-        if len(argv) == 1:
-            self.get()
+        if argv[0] == 'help':
+            self.help()
             return
-        if len(argv) == 3:
-            self.set()
-            return
-        self.help()
+        self.umount()
 
     def help(self):
-        description = 'Set/Get current working target Launchpad tag and IP'
-        print 'Usage: fish-init {} [ip tag]'.format(self.argv[0])
-        print '    ' + description
-        print 'Example:'
-        print '  $ fish-init {} 192.168.0.10 general-sff'.format(self.argv[0])
-        print '  $ fish-init {} '.format(self.argv[0])
-        print '  IP = 192.168.0.10'
-        print '  LP Tag = general-sff'
+        print 'Usage: fish-init {}'.format(self.argv[0])
+        print '  umount ./mount'
 
         sys.exit(0)

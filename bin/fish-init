@@ -13,11 +13,14 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+DEBUG = True
 import sys
 try:
+    if DEBUG:
+        raise ImportError()
     import lp_fish_init as fi
 except ImportError:
-    sys.path.append('.')
+    sys.path = ['.'] + sys.path
     import lp_fish_init as fi
 
 from lp_fish_init import *

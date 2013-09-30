@@ -1,2 +1,4 @@
 fish-init.completion etc/bash_completion.d/
 fish-init-target usr/bin/
+share/fish-init* usr/share/lp-fish-init/
+share/modalias.sh usr/share/lp-fish-init/
