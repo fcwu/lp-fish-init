@@ -18,27 +18,37 @@ import sys
 from command import CommandBase
 from settings import Settings
 import subprocess
+import logging
 
 
 class Command(CommandBase):
+    def is_mount(self):
+        if os.path.ismount('mnt'):
+            return True
+        return False
+
     def mount(self):
         if not os.path.exists('mnt'):
             os.makedirs('mnt')
         settings = Settings()
-        cmd = ['sshfs', settings.ip + ':/', 'mnt', '-o',
-               'IdentityFile=/usr/share/lp-fish-init/fish-init']
-        print ' '.join(cmd)
-        subprocess.call(cmd)
+        if self.is_mount():
+            return 0
+        cmd = ['sshfs', settings.ip + ':/', 'mnt',
+               '-o', 'IdentityFile=/usr/share/lp-fish-init/fish-init',
+               '-o', 'StrictHostKeyChecking=no',
+               '-o', 'UserKnownHostsFile=/dev/null']
+        logging.debug(' '.join(cmd))
+        return subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
         if argv[0] == 'help':
             self.help()
             return
-        self.mount()
+        return self.mount()
 
     def help(self):
-        print 'Usage: fish-init {}'.format(self.argv[0])
-        print '  mount target\'s root to ./mnt'
+        logging.info('Usage: fish-init {}'.format(self.argv[0]))
+        logging.info('  mount target\'s root to ./mnt')
 
         sys.exit(0)

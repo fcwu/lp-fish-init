@@ -16,23 +16,24 @@
 import sys
 from command import CommandBase
 import subprocess
+import logging
 
 
 class Command(CommandBase):
     def umount(self):
         cmd = ['fusermount', '-u', 'mnt']
-        print ' '.join(cmd)
-        subprocess.call(cmd)
+        logging.debug(' '.join(cmd))
+        return subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
         if argv[0] == 'help':
             self.help()
             return
-        self.umount()
+        return self.umount()
 
     def help(self):
-        print 'Usage: fish-init {}'.format(self.argv[0])
-        print '  umount ./mount'
+        logging.info('Usage: fish-init {}'.format(self.argv[0]))
+        logging.info('  umount ./mount')
 
         sys.exit(0)

@@ -17,34 +17,31 @@ import sys
 from command import CommandBase
 from settings import Settings
 import subprocess
-import logging
 
 
 class Command(CommandBase):
     def ssh(self):
         settings = Settings()
         cmd = ['ssh', settings.ip, '-i',
-               '/usr/share/lp-fish-init/fish-init',
-               '-o', 'StrictHostKeyChecking=no',
-               '-o', 'UserKnownHostsFile=/dev/null']
+               '/usr/share/lp-fish-init/fish-init']
         if len(self.argv) > 1:
             cmd += self.argv[1:]
-        logging.debug(' '.join(cmd))
-        return subprocess.call(cmd)
+        print ' '.join(cmd)
+        subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
         if argv[0] == 'help':
             self.help()
             return
-        return self.ssh()
+        self.ssh()
 
     def help(self):
-        logging.info('Usage: fish-init {} [command]'.format(self.argv[0]))
-        logging.info('Example:')
-        logging.info('  # login to target')
-        logging.info('    $ fish-init {}'.format(self.argv[0]))
-        logging.info('  # Run dpkg -l on target')
-        logging.info('    $ fish-init {} dpkg -l'.format(self.argv[0]))
+        print 'Usage: fish-init {} [command]'.format(self.argv[0])
+        print 'Example:'
+        print '  # login to target'
+        print '    $ fish-init {}'.format(self.argv[0])
+        print '  # Run dpkg -l on target'
+        print '    $ fish-init {} dpkg -l'.format(self.argv[0])
 
         sys.exit(0)

@@ -1,6 +1,6 @@
 [commands]
 - fish-init config tag ip
-fish-init modaliases
+- fish-init modaliases
 fish-init openbugs
 fish-init manifest create
   fish-manifest
