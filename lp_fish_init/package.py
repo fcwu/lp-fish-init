@@ -140,7 +140,7 @@ class Command(CommandBase):
 
     def run(self, argv):
         self.argv = argv
-        if len(argv) == 2 and argv[1] == 'help':
+        if argv[-1] == 'help':
             self.help()
             return
 
