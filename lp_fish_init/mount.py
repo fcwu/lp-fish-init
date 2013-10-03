@@ -19,6 +19,7 @@ from command import CommandBase
 from settings import Settings
 import subprocess
 import logging
+from umount import Command as Umount
 
 
 class Command(CommandBase):
@@ -28,11 +29,14 @@ class Command(CommandBase):
         return False
 
     def mount(self):
-        if not os.path.exists('mnt'):
-            os.makedirs('mnt')
-        settings = Settings()
         if self.is_mount():
             return 0
+        if not os.path.exists('mnt'):
+            try:
+                os.makedirs('mnt')
+            except OSError:
+                Umount().run(['umount'])
+        settings = Settings()
         cmd = ['sshfs', settings.ip + ':/', 'mnt',
                '-o', 'IdentityFile=/usr/share/lp-fish-init/fish-init',
                '-o', 'StrictHostKeyChecking=no',
@@ -48,7 +52,7 @@ class Command(CommandBase):
         return self.mount()
 
     def help(self):
-        logging.info('Usage: fish-init {}'.format(self.argv[0]))
-        logging.info('  mount target\'s root to ./mnt')
+        print('Usage: fish-init {}'.format(self.argv[0]))
+        print('  mount target\'s root to ./mnt')
 
         sys.exit(0)

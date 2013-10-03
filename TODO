@@ -1,12 +1,13 @@
 [commands]
 - fish-init config tag ip
-- fish-init modaliases
+- fish-init package
 fish-init openbugs
 fish-init manifest create
   fish-manifest
-fish-init deploy
+fish-init deploy {manifest.html}
+  - compare sda2 screenshot with base image
 fish-init recovery
-fish-init manifest commit
+fish-init manifest commit {manifest.html}
   fish-manifest
 fish-init diff-package
 - fish-init ssh
