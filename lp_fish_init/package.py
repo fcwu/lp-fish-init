@@ -23,6 +23,7 @@ from shellcommand import ShellCommand
 import os
 import logging
 from lp_fish_tools.util import userEditString
+from settings import Settings
 
 
 def exit_if_ne_0(ret):
@@ -129,7 +130,9 @@ class Command(CommandBase):
             copy(self.script, './mnt/tmp/modaliases.sh')
 
             logging.info('run script...')
-            Ssh().run(['ssh', '/tmp/modaliases.sh', '-o', '/tmp/ma.txt'])
+            Ssh().run(['ssh', '/tmp/modaliases.sh',
+                       '-s', Settings().ma_server_address,
+                       '-o', '/tmp/ma.txt'])
 
             logging.info('copy result back as ' + self.outputs[0])
             copy('./mnt/tmp/ma.txt', './' + self.outputs[0])

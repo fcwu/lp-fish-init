@@ -64,6 +64,10 @@ class Settings(object):
     def tag(self, value):
         self.set('basic', 'tag', value)
 
+    @property
+    def ma_server_address(self):
+        return 'http://162.213.34.36:5566'
+
     def get(self, section, name):
         value = ''
         try:

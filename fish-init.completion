@@ -30,7 +30,7 @@ _fish_init()
 #                -b -z --zsync-input -g' -- "$cur" ) )
 #            ;;
         *)
-            COMPREPLY=( $( compgen -W 'config package openbugs \
+            COMPREPLY=( $( compgen -W 'config package openbug \
                 manifest-rc manifest deploy recovery ssh scp install-recovery \
                 uninstall-recovery mount umount' -- "$cur" ) )
             ;;

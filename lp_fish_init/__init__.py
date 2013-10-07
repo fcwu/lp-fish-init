@@ -1,1 +1,1 @@
-__all__ = ['config', 'package', 'ssh', 'mount', 'umount']
+__all__ = ['config', 'package', 'ssh', 'mount', 'umount', 'openbug']

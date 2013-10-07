@@ -1,15 +1,20 @@
 [commands]
 - fish-init config tag ip
 - fish-init package
-fish-init openbugs
+fish-init openbug (70%)
+  - use webdav to download package and create md5
+  - if not exist in webdav, then upload it from modalias to it
 fish-init manifest create
   fish-manifest
 fish-init deploy {manifest.html}
   - compare sda2 screenshot with base image
 fish-init recovery
+  - sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
+  - sudo reboot
 fish-init manifest commit {manifest.html}
   fish-manifest
 fish-init diff-package
+  #$ find . -type f | xargs md5sum | sort -k 2 > ~/bto_20130203_filelist.txt
 - fish-init ssh
 - fish-init mount
 - fish-init umount
