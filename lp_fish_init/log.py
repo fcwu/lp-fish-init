@@ -4,6 +4,7 @@
 import sys
 import logging
 import logging.handlers
+from webdav.logger import getDefaultLogger
 
 
 #The terminal has 8 colors with codes from 0 to 7
@@ -60,6 +61,7 @@ class LoggingConfiguration(object):
             log_handler.setFormatter(formatter)
             log_handler.setLevel(log_level)
             logger.addHandler(log_handler)
+            getDefaultLogger(log_handler)
 
         # Log to rotating file using DEBUG log level
         log_handler = logging.handlers.RotatingFileHandler(log_filename,

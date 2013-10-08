@@ -23,11 +23,14 @@ except ImportError:
     sys.path = ['.'] + sys.path
     import lp_fish_init as fi
 
-from lp_fish_init import *
-from lp_fish_init import command
 from lp_fish_init.log import LoggingConfiguration
 import logging
+# Initialize log before import others script of lp_fish_init because there may
+# has scripts to initialize log prior to this
+LoggingConfiguration.set(logging.INFO, '/tmp/fish-init', False)
 
+from lp_fish_init import command
+from lp_fish_init import *
 
 
 def command_instance(kls):
@@ -49,7 +52,6 @@ def run(argv):
 
 
 def main(argv):
-    LoggingConfiguration.set(logging.INFO, '/tmp/fish-init', False)
     commands = available_commands()
     if len(argv) <= 1 or argv[1] not in commands:
         print argv[0] + ' {' + ' | '.join(commands) + '}'

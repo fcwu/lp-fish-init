@@ -2,7 +2,7 @@
 # ==============================================================================
 # tarbar FISH
 # format: bug_number filename comment
-LP:1197609 kernel-3.5.0-36_fish1.tar.gz Latest Linux kernel used in Somerville project: 3.5.0-36 
+LP:1206000 kernel-3.5.0-36_fish1.tar.gz Latest Linux kernel used in Somerville project: 3.5.0-36 
 LP:1199271 bt-force-restart-after-resume-precise_fish2.tar.gz Options disappear in BT menu after s3/resume with a BT headset connected
 LP:1203977 video-i915-3.5.36-precise_fish1.tar.gz Need Intel Onboard Graphic Driver [8086:0412]
 # ==============================================================================

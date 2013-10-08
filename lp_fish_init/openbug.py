@@ -14,16 +14,15 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from command import CommandBase
-import sys
 import os
 import logging
-import subprocess
 from lp_fish_tools.util import EditableData
 from lp_fish_tools.util import splitInputValues as split_tags
 from settings import Settings
 import webbrowser
 from launchpadlib.launchpad import Launchpad
 import hashlib
+from lp_fish_tools.SomervilleShare import SomervilleShare
 
 
 MODALIAS_DESCRIPTION = '''
@@ -78,10 +77,44 @@ class Command(CommandBase):
         self._lp = lp
         return self._lp
 
+    @property
+    def project(self):
+        return 'dell'
+
+    def openbug_editable_commit(self, editable):
+        while True:
+            logging.info("Passing bug description to user for editing")
+            editable.userEdit()
+
+            # user confirmation
+            inp = raw_input('Continue? [y]es/[r]eview/[n]o]> ').lower()
+            if inp == "y":
+                break
+            elif inp == "r":
+                continue
+            else:
+                logging.info("Quitting at user request")
+                raise KeyboardInterrupt
+
+        # create new bug and add targets
+        logging.info("Creating new bug")
+        tags = split_tags(editable.namedValues["Tags"])
+        create_bug = self.lp.bugs.createBug
+        newBug = create_bug(description=editable.baseText,
+                            private=True,
+                            security_related=False,
+                            tags=tags,
+                            target=self.lp.projects[self.project],
+                            title=editable.namedValues["Title"])
+        logging.info('New bug created: %d - opening in browser...' %
+                     newBug.id)
+        url = 'https://bugs.launchpad.net/bugs/%d' % newBug.id
+        webbrowser.open(url)
+        logging.info('Done')
+
     def openbug_ma(self, line):
         dest_basepath = 'pool'
-        project = 'dell'
-        title = ('Need driver package support for <module name> [<device id>]')
+        title = ('Need package support for <module name> [<device id>]')
         try:
             if not os.path.exists(dest_basepath):
                 os.mkdir(dest_basepath)
@@ -89,49 +122,27 @@ class Command(CommandBase):
             # download
             filename = os.path.join(dest_basepath, package)
             logging.info('Downloading {}'.format(filename))
-            subprocess.check_call(['wget', '{}/api/v0/download/{}?{}'.format(
-                                   Settings().ma_server_address,
-                                   package, download_params),
-                                   '-O', filename])
+            svshare = SomervilleShare()
+            #svshare.conn.logger = logging  # supress logging message
+            svshare.download_fish(package)
+            os.rename(package, filename)
+            #subprocess.check_call(['wget', '{}/api/v0/download/{}?{}'.format(
+            #                       Settings().ma_server_address,
+            #                       package, download_params),
+            #                       '-O', filename])
             # md5sum
             md5 = hashlib.md5(open(filename).read()).hexdigest()
+
             description = MODALIAS_DESCRIPTION.format(modalias=modalias,
                                                       package=package,
                                                       md5=md5)
             editable = EditableData(description,
-                                    {'Projects': project,
+                                    {'Projects': self.project,
                                      'Tags': Settings().tag,
                                      'Title': title})
-            while True:
-                logging.info("Passing bug description to user for editing")
-                editable.userEdit()
-
-                # user confirmation
-                inp = raw_input('Continue? [y]es/[r]eview/[n]o]> ').lower()
-                if inp == "y":
-                    break
-                elif inp == "r":
-                    continue
-                else:
-                    logging.info("Quitting at user request")
-                    self.error_lines.append(line)
-                    return
-
-            # create new bug and add targets
-            logging.info("Creating new bug")
-            tags = split_tags(editable.namedValues["Tags"])
-            create_bug = self.lp.bugs.createBug
-            newBug = create_bug(description=editable.baseText,
-                                private=True,
-                                security_related=False,
-                                tags=tags,
-                                target=project,
-                                title=editable.namedValues["Title"])
-            logging.info('New bug created: %d - opening in browser...' %
-                         newBug.id)
-            url = 'https://bugs.launchpad.net/bugs/%d' % newBug.id
-            webbrowser.open(url)
-            logging.info('Done')
+            self.openbug_editable_commit(editable)
+        except KeyboardInterrupt:
+            self.error_lines.append(line)
         except Exception as e:
             logging.error('{}: Open bug for {}'.format(e, line))
             self.error_lines.append(line)
@@ -139,7 +150,20 @@ class Command(CommandBase):
     def openbug_lp(self, line):
         try:
             bugnum = line.split(' ', 2)[0][3:]
-            subprocess.check_call(['dup-bug', str(bugnum)])
+            bug = self.lp.bugs[bugnum]
+            if not bug:
+                logging.error("Failed to obtain bug")
+                raise IndexError
+            title = bug.title
+            description = "{}\n\nCopied from bug #{}".format(bug.description,
+                                                             bug.id)
+            editable = EditableData(description,
+                                    {'Projects': self.project,
+                                     'Tags': Settings().tag,
+                                     'Title': title})
+            self.openbug_editable_commit(editable)
+        except KeyboardInterrupt:
+            self.error_lines.append(line)
         except Exception as e:
             logging.error('{}: Open bug for {}'.format(e, line))
             self.error_lines.append(line)
@@ -165,7 +189,8 @@ class Command(CommandBase):
                     continue
                 lines.append(line)
         for line in enumerate(lines):
-            logging.info('In progress... {}/{}'.format(line[0], len(lines)))
+            logging.info('In progress... {}/{}'.format(int(line[0]) + 1,
+                                                       len(lines)))
             logging.info('Open bug for {}'.format(line[1]))
             self.openbug_line(line[1])
 
@@ -176,12 +201,10 @@ class Command(CommandBase):
             return
         map(self.openbug_file, self.inputs)
         if len(self.error_lines) > 0:
-            logging.info('Following bugs didn\'t open')
+            logging.warn('Following bugs didn\'t open')
         for line in self.error_lines:
-            logging.info('    ' + line)
+            logging.warn('    ' + line)
 
     def help(self):
         print('Usage: fish-init [-i packages.txt] {}'.format(self.argv[0]))
         print('  Open bugs on launchpad')
-
-        sys.exit(0)

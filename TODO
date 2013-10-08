@@ -1,9 +1,7 @@
 [commands]
 - fish-init config tag ip
 - fish-init package
-fish-init openbug (70%)
-  - use webdav to download package and create md5
-  - if not exist in webdav, then upload it from modalias to it
+- fish-init openbug
 fish-init manifest create
   fish-manifest
 fish-init deploy {manifest.html}
@@ -15,6 +13,7 @@ fish-init manifest commit {manifest.html}
   fish-manifest
 fish-init diff-package
   #$ find . -type f | xargs md5sum | sort -k 2 > ~/bto_20130203_filelist.txt
+  # dpkg-query -W -f='${Package} ${Version}\n'
 - fish-init ssh
 - fish-init mount
 - fish-init umount
