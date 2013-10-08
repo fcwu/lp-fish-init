@@ -2,15 +2,15 @@
 - fish-init config tag ip
 - fish-init package
 - fish-init openbug
-fish-init manifest create
-  fish-manifest
+-fish-init manifest create
+-  fish-manifest
 fish-init deploy {manifest.html}
   - compare sda2 screenshot with base image
 fish-init recovery
   - sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
   - sudo reboot
-fish-init manifest commit {manifest.html}
-  fish-manifest
+- fish-init manifest commit
+-  fish-manifest
 fish-init diff-package
   #$ find . -type f | xargs md5sum | sort -k 2 > ~/bto_20130203_filelist.txt
   # dpkg-query -W -f='${Package} ${Version}\n'

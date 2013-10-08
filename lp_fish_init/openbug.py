@@ -206,5 +206,5 @@ class Command(CommandBase):
             logging.warn('    ' + line)
 
     def help(self):
-        print('Usage: fish-init [-i packages.txt] {}'.format(self.argv[0]))
+        print('Usage: fish-init {} [-i packages.txt]'.format(self.argv[0]))
         print('  Open bugs on launchpad')
