@@ -7,9 +7,12 @@ _fish_init()
     local cur prev
     _get_comp_words_by_ref -n : cur prev
 
-#    _expand || return 0
-#
-#    case $prev in
+    _expand || return 0
+
+    case $prev in
+        manifest)
+            COMPREPLY=( $( compgen -W 'create commit' -- "$cur" ) )
+            ;;
 #        config)
 #            fish-init config help
 #            return 1
@@ -22,7 +25,7 @@ _fish_init()
 #            COMPREPLY=( $( compgen -W 'debug info warning error critical' -- "$cur" ) )
 #            return 0
 #            ;;
-#    esac
+    esac
 
     case $cur in
 #        -*)
@@ -31,7 +34,7 @@ _fish_init()
 #            ;;
         *)
             COMPREPLY=( $( compgen -W 'config package openbug \
-                manifest diff mount umount execlocal diff' -- "$cur" ) )
+                manifest diff mount umount execlocal diff deploy' -- "$cur" ) )
             ;;
 
     esac

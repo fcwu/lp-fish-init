@@ -22,19 +22,6 @@ from execlocal import Command as ExecLocal
 
 
 class Command(CommandBase):
-    @property
-    def filelist_path(self):
-        version = Settings().bto_version
-        if os.path.exists('./share/bto-' + version + '-filelist.txt'):
-            return './share/bto-' + version + '-filelist.txt'
-        return '/usr/share/fish-init/bto-' + version + '-filelist.txt'
-
-    @property
-    def recovery_filelist_path(self):
-        if os.path.exists('./share/recovery-filelist.sh'):
-            return './share/recovery-filelist.sh'
-        return '/usr/share/fish-init/recovery-filelist.sh'
-
     def read_fileitems(self, inp):
         items = {}
         for line in inp:
@@ -42,11 +29,11 @@ class Command(CommandBase):
             items[fields[2]] = fields[0]
         return items
 
-    def bto(self):
+    def bto(self, argv=None):
         result = {'add': [], 'modify': [], 'delete': []}
-        ExecLocal().run(['execlocal', self.recovery_filelist_path,
-                        '/tmp/recovery-filelist.txt'])
-        bto = self.read_fileitems(open(self.filelist_path, 'r'))
+        ExecLocal().run(['execlocal', Settings().recovery_filelist_path,
+                        '-f', '/tmp/recovery-filelist.txt'])
+        bto = self.read_fileitems(open(Settings().filelist_path, 'r'))
         target = self.read_fileitems(open('recovery-filelist.txt', 'r'))
         for item in target:
             if item in bto:
@@ -79,7 +66,7 @@ class Command(CommandBase):
             return
 
     def help(self):
-        print('Usage: fish-init {}'.format(self.argv[0]))
+        print('Usage: fish-init {} bto'.format(self.argv[0]))
         print('  show different files with base image')
 
         sys.exit(0)

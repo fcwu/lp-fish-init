@@ -19,15 +19,18 @@ import logging
 import subprocess
 from settings import Settings
 import os
+from shellcommand import ShellCommand
 
 
 class Command(CommandBase):
     def create(self):
         filename = 'manifest.html'
         while os.path.exists(filename):
-            msg = 'Found {}. Overwrite? [y]es/[n]o/[r]ename]> '.format(filename)
+            msg = ('Found {}.'
+                   ' Overwrite? [y]es/[n]o/[r]ename]> ').format(filename)
             inp = raw_input(msg).lower()
             if inp == "y":
+                os.remove(filename)
                 break
             elif inp == "r":
                 filename = raw_input('rename to> ').lower()
@@ -35,8 +38,8 @@ class Command(CommandBase):
             else:
                 return
         try:
-            subprocess.check_call(['fish-manifest', Settings().tag,
-                                  '-o', filename])
+            cmd = 'fish-manifest {} -o {}'.format(Settings().tag, filename)
+            ShellCommand(cmd).run()
         except Exception as e:
             logging.error(str(e))
 
@@ -44,6 +47,8 @@ class Command(CommandBase):
         try:
             subprocess.check_call(['fish-manifest', Settings().tag,
                                    '-r', 'precise', '-c'])
+            #cmd = 'fish-manifest {} -r precise -c'.format(Settings().tag)
+            #shcmd = ShellCommand(cmd).run()
         except Exception as e:
             logging.error(str(e))
 

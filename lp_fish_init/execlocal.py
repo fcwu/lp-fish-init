@@ -38,6 +38,21 @@ class Command(CommandBase):
     def script(self):
         return self.argv[1]
 
+    @property
+    def outputs(self):
+        if hasattr(self, '_outputs'):
+            return self._outputs
+        self._outputs = []
+        skip = False
+        for argv in enumerate(self.argv):
+            if skip:
+                skip = False
+                continue
+            if argv[1] == '-o':
+                skip = True
+                self._outputs.append(self.argv[argv[0] + 1])
+        return self._outputs
+
     def copy_file_back(self, arg):
         filename = os.path.basename(arg)
         if not os.path.exists('./mnt/' + arg):
@@ -59,10 +74,20 @@ class Command(CommandBase):
             copy(self.script, './mnt/tmp/' + script_target,)
 
             logging.info('run script...')
-            Ssh().run(['ssh', '/tmp/' + script_target])
+            cmd = ['ssh', '/tmp/' + script_target]
+            output_index = -1
+            for arg in enumerate(self.argv[2:]):
+                if arg[1] == '-f':
+                    output_index = arg[0] + 3
+                    break
+                cmd.append(arg[1])
+            Ssh().run(cmd)
 
-            if len(argv) >= 3:
-                map(self.copy_file_back, argv[2:])
+            if output_index > 0:
+                map(self.copy_file_back, argv[output_index:])
+
+            cmd = ['ssh', 'rm', '-f', '/tmp/' + script_target]
+            Ssh().run(cmd)
         finally:
             if not is_mount:
                 logging.info('umount')
@@ -70,7 +95,7 @@ class Command(CommandBase):
 
     def run(self, argv):
         self.argv = argv
-        if len(argv) == 0 and argv[-1] == 'help':
+        if len(argv) == 1 or argv[-1] == 'help':
             self.help()
             return
         if not isfile(self.script) or not access(self.script, os.X_OK):
@@ -79,8 +104,8 @@ class Command(CommandBase):
         self.execlocal()
 
     def help(self):
-        print('Usage: fish-init {} <localscript> [copy_back_file]'.format(
-              self.argv[0]))
-        print('  Execute localscript on target and copy copy_back_file back')
+        print('Usage: fish-init {} <localscript arg1 arg2 ...> '
+              '[-f f1 f2 ...]'.format(self.argv[0]))
+        print('  Execute localscript on target and copy f1/f2... back')
 
         sys.exit(0)

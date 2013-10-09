@@ -72,6 +72,19 @@ class Settings(object):
     def bto_version(self):
         return '20130203'
 
+    @property
+    def filelist_path(self):
+        version = Settings().bto_version
+        if os.path.exists('./share/bto-' + version + '-filelist.txt'):
+            return './share/bto-' + version + '-filelist.txt'
+        return '/usr/share/fish-init/bto-' + version + '-filelist.txt'
+
+    @property
+    def recovery_filelist_path(self):
+        if os.path.exists('./share/recovery-filelist.sh'):
+            return './share/recovery-filelist.sh'
+        return '/usr/share/fish-init/recovery-filelist.sh'
+
     def get(self, section, name):
         value = ''
         try:
