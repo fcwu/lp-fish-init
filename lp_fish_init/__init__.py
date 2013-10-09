@@ -1,2 +1,2 @@
 __all__ = ['config', 'package', 'ssh', 'mount', 'umount', 'openbug',
-           'manifest']
+           'manifest', 'diff', 'execlocal']

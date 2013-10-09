@@ -68,6 +68,10 @@ class Settings(object):
     def ma_server_address(self):
         return 'http://162.213.34.36:5566'
 
+    @property
+    def bto_version(self):
+        return '20130203'
+
     def get(self, section, name):
         value = ''
         try:

@@ -31,8 +31,7 @@ _fish_init()
 #            ;;
         *)
             COMPREPLY=( $( compgen -W 'config package openbug \
-                manifest-rc manifest deploy recovery ssh scp install-recovery \
-                uninstall-recovery mount umount' -- "$cur" ) )
+                manifest diff mount umount execlocal diff' -- "$cur" ) )
             ;;
 
     esac
