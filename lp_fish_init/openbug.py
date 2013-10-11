@@ -113,7 +113,7 @@ class Command(CommandBase):
         logging.info('Done')
 
     def openbug_ma(self, line):
-        dest_basepath = 'pool'
+        dest_basepath = Settings().pool_path
         title = ('Need package support for <module name> [<device id>]')
         try:
             if not os.path.exists(dest_basepath):

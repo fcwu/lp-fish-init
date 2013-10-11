@@ -85,6 +85,22 @@ class Settings(object):
             return './share/recovery-filelist.sh'
         return '/usr/share/fish-init/recovery-filelist.sh'
 
+    @property
+    def recovery_deploy_path(self):
+        if os.path.exists('./share/recovery-deploy.sh'):
+            return './share/recovery-deploy.sh'
+        return '/usr/share/fish-init/recovery-deploy.sh'
+
+    @property
+    def recovery_remove_path(self):
+        if os.path.exists('./share/recovery-remove.sh'):
+            return './share/recovery-remove.sh'
+        return '/usr/share/fish-init/recovery-remove.sh'
+
+    @property
+    def pool_path(Self):
+        return 'pool'
+
     def get(self, section, name):
         value = ''
         try:

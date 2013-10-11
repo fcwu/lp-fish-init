@@ -69,11 +69,11 @@ class Command(CommandBase):
             exit_if_ne_0(Mount().run(argv))
         try:
             script_target = 'execlocal-{0:06d}'.format(randint(0, 999999))
-            logging.info('copy {} to target {}'.format(self.script,
-                                                       script_target))
+            logging.debug('copy {} to target {}'.format(self.script,
+                                                        script_target))
             copy(self.script, './mnt/tmp/' + script_target,)
 
-            logging.info('run script...')
+            logging.info('run script {} ...'.format(self.script))
             cmd = ['ssh', '/tmp/' + script_target]
             output_index = -1
             for arg in enumerate(self.argv[2:]):
@@ -87,11 +87,12 @@ class Command(CommandBase):
                 map(self.copy_file_back, argv[output_index:])
 
             cmd = ['ssh', 'rm', '-f', '/tmp/' + script_target]
-            Ssh().run(cmd)
+            return Ssh().run(cmd)
         finally:
             if not is_mount:
                 logging.info('umount')
                 Umount().run(argv)
+        return -1
 
     def run(self, argv):
         self.argv = argv
@@ -101,7 +102,7 @@ class Command(CommandBase):
         if not isfile(self.script) or not access(self.script, os.X_OK):
             logging.critical('{} not found or not executable'.
                              format(self.script))
-        self.execlocal()
+        return self.execlocal()
 
     def help(self):
         print('Usage: fish-init {} <localscript arg1 arg2 ...> '

@@ -5,7 +5,7 @@
 fish-init manifest {create|commit}
   * fish-manifest
 fish-init deploy {-f manifest.html|revert}
-  - compare sda2 screenshot with base image
+  * bash completion
 fish-init recovery
   * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
   * sudo reboot
@@ -14,7 +14,8 @@ fish-init recovery
 - fish-init ssh
 - fish-init mount
 - fish-init umount
-x fish-init scp
+fish-init scp
+  * bash completion
 fish-init exec-local localscript [copy_back_file]
 fish-init install-recovery {*.fish*.gz, *.deb}
 fish-init uninstall-recovery {*.fish*.gz, *.deb}

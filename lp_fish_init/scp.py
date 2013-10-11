@@ -20,28 +20,26 @@ import subprocess
 
 
 class Command(CommandBase):
-    def ssh(self):
+    def scp(self):
         settings = Settings()
-        cmd = ['ssh', settings.ip, '-i',
-               '/usr/share/lp-fish-init/fish-init']
-        if len(self.argv) > 1:
-            cmd += self.argv[1:]
+        cmd = ['scp', '-i', '/usr/share/lp-fish-init/fish-init', '-q',
+               '-o', 'StrictHostKeyChecking=no',
+               '-o', 'UserKnownHostsFile=/dev/null']
+        cmd += self.argv[1:-1]
+        cmd += ['{}:{}'.format(settings.ip, self.argv[-1])]
         print ' '.join(cmd)
-        subprocess.call(cmd)
+        return subprocess.call(cmd)
 
     def run(self, argv):
         self.argv = argv
-        if argv[0] == 'help':
+        if argv[0] == 'help' or len(argv) <= 2:
             self.help()
             return
-        self.ssh()
+        return self.scp()
 
     def help(self):
-        print 'Usage: fish-init {} [command]'.format(self.argv[0])
-        print 'Example:'
-        print '  # login to target'
-        print '    $ fish-init {}'.format(self.argv[0])
-        print '  # Run dpkg -l on target'
-        print '    $ fish-init {} dpkg -l'.format(self.argv[0])
+        print('Usage: fish-init {} file1 [file2 ...] dest'.format(
+              self.argv[0]))
+        print '  copy file(s) to target'
 
         sys.exit(0)
