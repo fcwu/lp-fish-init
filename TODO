@@ -6,9 +6,9 @@ fish-init manifest {create|commit}
   * fish-manifest
 fish-init deploy {-f manifest.html|revert}
   * bash completion
-fish-init recovery
-  * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
-  * sudo reboot
+ fish-init recovery
+   * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
+   * sudo reboot
 - fish-init diff
 -  * dpkg-query -W -f='${Package} ${Version}\n'
 - fish-init ssh

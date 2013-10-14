@@ -98,6 +98,12 @@ class Settings(object):
         return '/usr/share/fish-init/recovery-remove.sh'
 
     @property
+    def boot_recovery_path(self):
+        if os.path.exists('./share/boot-recovery.py'):
+            return './share/boot-recovery.py'
+        return '/usr/share/fish-init/boot-recovery.py'
+
+    @property
     def pool_path(Self):
         return 'pool'
 
