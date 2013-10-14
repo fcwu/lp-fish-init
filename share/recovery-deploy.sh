@@ -24,7 +24,7 @@ export CURDIR=`pwd`
 mount_recovery()
 {
     echo "mount \"$1\" \"$MOUNTDIR\""
-    if ! sudo mount "$1" "$MOUNTDIR" && [ -f ${MOUNTDIR}/bto.xml ]; then
+    if ! sudo mount "$1" "$MOUNTDIR" || [ ! -f ${MOUNTDIR}/bto.xml ]; then
         return 1
     fi
     return 0

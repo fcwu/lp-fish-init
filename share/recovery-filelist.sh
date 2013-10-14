@@ -13,7 +13,7 @@ export TMPDIR=`mktemp -d /tmp/mount-recovery.XXXXXX`
 mount_recovery()
 {
     echo "mount \"$1\" \"$TMPDIR\""
-    if ! sudo mount "$1" "$TMPDIR" && [ -f ${TMPDIR}/bto.xml ]; then
+    if ! sudo mount "$1" "$TMPDIR" || [ ! -f ${TMPDIR}/bto.xml ]; then
         return 1
     fi
     return 0
