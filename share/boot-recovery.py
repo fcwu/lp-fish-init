@@ -46,26 +46,45 @@ if ! mountpoint -q $MOUNTDIR; then
     bye -1
 fi
 
-if grep -q "FISH-INIT-HACK >>>" ${MOUNTDIR}/preseed/dell-recovery.seed; then
-    bye 0
-fi
-cat <<EOF >> ${MOUNTDIR}/preseed/dell-recovery.seed
-FISH-INIT-HACK >>>
-### QA Provision Config
-d-i oem-config/enable boolean false
+if ! grep -q "FISH-INIT-HACK >>>" ${MOUNTDIR}/preseed/dell-recovery.seed; then
+    cat <<EOF >> ${MOUNTDIR}/preseed/dell-recovery.seed
+### FISH-INIT-HACK >>>
+ubiquity oem-config/enable boolean false
 
 ### Timezone ###
-d-i time/zone select Asia/Taipei
+ubiquity time/zone select Asia/Taipei
 
 ### User configuration ###
-d-i passwd/user-fullname string 'u'
-d-i passwd/username string u
-d-i passwd/user-password password u
-d-i passwd/user-password-again password u
-d-i passwd/auto-login boolean true
-d-i user-setup/allow-password-weak boolean true
-FISH-INIT-HACK <<<
+ubiquity passwd/user-fullname string u-fish-init
+ubiquity passwd/username string u
+ubiquity passwd/user-password password u
+ubiquity passwd/user-password-again password u
+ubiquity passwd/auto-login boolean true
+ubiquity user-setup/allow-password-weak boolean true
+### FISH-INIT-HACK <<<
 EOF
+fi
+
+mkdir -p scripts/chroot-scripts/os-post/
+cat <<EOF > ${MOUNTDIR}/scripts/chroot-scripts/os-post/00-build-dell-recovery-part
+#!/usr/bin/python
+import Dell.recovery_common as magic
+import os
+import subprocess
+
+rpart = magic.find_factory_rp_stats()
+if rpart:
+    rec_text = "Restore Ubuntu " + os.popen('lsb_release -r -s').readline().strip() + " to factory state"
+    magic.process_conf_file(original = '/usr/share/dell/grub/99_dell_recovery', \
+                            new = '/etc/grub.d/99_dell_recovery',               \
+                            uuid = str(rpart["uuid"]),                          \
+                            rp_number = str(rpart["number"]),                   \
+                            recovery_text = rec_text)
+
+    os.chmod('/etc/grub.d/99_dell_recovery', 0755)
+    subprocess.call(['update-grub'])
+EOF
+cp -v /tmp/fish-init-target ${MOUNTDIR}/scripts/chroot-scripts/os-post/01-fish-init-target
 bye 0
 '''
 
@@ -121,19 +140,20 @@ def prepare_reboot():
     if ret is not 0:
         raise RestoreFailed("error setting one time grub entry")
 
-    #if '-a' in sys.argv:
-    #    with NamedTemporaryFile(delete=False) as f:
-    #        f.write(AUTO_INSTALL)
-    #        f.close()
-    #        subprocess.call(['/bin/sh', f.name])
-    #        os.unlink(f.name)
+    if '-a' in sys.argv:
+        with NamedTemporaryFile(delete=False) as f:
+            f.write(AUTO_INSTALL)
+            f.close()
+            if subprocess.call(['/bin/sh', f.name]) is not 0:
+                logging.critical('Failed to run automatic install script')
+            os.unlink(f.name)
 
 
 def main():
     try:
         if os.getuid() != 0:
             print >> sys.stderr, "sudo as root... (UID={})".format(os.getuid())
-            sys.exit(subprocess.call(['/usr/bin/sudo', sys.argv[0]]))
+            sys.exit(subprocess.call(['/usr/bin/sudo'] + sys.argv))
         prepare_reboot()
         subprocess.Popen(['/usr/bin/sudo',
                           '/bin/sh', '-c',

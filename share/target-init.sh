@@ -17,6 +17,10 @@ export TMPDIR=`mktemp -d /tmp/selfextract.XXXXXX`
 ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
 tail -n+$ARCHIVE $0 | tar xjf - -C $TMPDIR
 
+# ugly hack for recovery command
+if basename "$0" | grep -q "01-fish-init-target"; then
+    SUDO_USER=u
+fi
 if [ "$SUDO_USER" == "" ]; then
     echo "Usage: sudo $0"
     exit 1

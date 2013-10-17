@@ -20,6 +20,7 @@ import subprocess
 from settings import Settings
 import os
 from shellcommand import ShellCommand
+#from lp_fish_tools.BzrProject import sourceBranch, ubuntuRelease
 
 
 class Command(CommandBase):
@@ -45,10 +46,23 @@ class Command(CommandBase):
 
     def commit(self):
         try:
+            logging.info('Commit manifest with tag ' + Settings().tag)
             subprocess.check_call(['fish-manifest', Settings().tag,
                                    '-r', 'precise', '-c'])
-            #cmd = 'fish-manifest {} -r precise -c'.format(Settings().tag)
-            #shcmd = ShellCommand(cmd).run()
+            #tag = Settings().tag
+            #ubuntuRelease('precise')
+            #source_branch = sourceBranch(tag)
+            #codename = os.path.basename(source_branch)
+            #url = source_branch
+            #logging.info('codename:               ' + codename)
+            #logging.info('Project Title:          Dell {} {}'.format('precise',
+            #                                                         tag))
+            #logging.info('Project Group:          Somerville')
+            #logging.info('Architecture:           amd64')
+            #logging.info('Launchpad Project:      dell')
+            #logging.info('Config URL:             ' + url)
+        except KeyboardInterrupt as e:
+            logging.info('^c')
         except Exception as e:
             logging.error(str(e))
 

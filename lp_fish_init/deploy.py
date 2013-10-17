@@ -137,8 +137,8 @@ class Command(CommandBase):
 
     def help(self):
         print('Usage: fish-init {} [manifest.html]'.format(self.argv[0]))
-        print('  show different files with base image')
+        print('  deploy fixes in manifest.html to target recovery partition')
         print('Usage: fish-init {} revert'.format(self.argv[0]))
-        print('  show different files with base image')
+        print('  Revert recovery partition without fixes')
 
         sys.exit(0)

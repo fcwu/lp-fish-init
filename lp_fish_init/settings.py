@@ -104,6 +104,12 @@ class Settings(object):
         return '/usr/share/fish-init/boot-recovery.py'
 
     @property
+    def fish_init_target(self):
+        if os.path.exists('fish-init-target'):
+            return 'fish-init-target'
+        return '/usr/bin/fish-init-target'
+
+    @property
     def pool_path(Self):
         return 'pool'
 

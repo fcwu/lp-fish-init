@@ -18,12 +18,17 @@ import sys
 import logging
 from execlocal import Command as ExecLocal
 from settings import Settings
+from scp import Command as Scp
 
 
 class Command(CommandBase):
     def recovery(self):
+        if '-a' in self.argv:
+            if Scp().run(['scp', Settings().fish_init_target, '/tmp/']) != 0:
+                logging.critical('Failed to copy {} to target'.format(
+                                 Settings().fish_init_target))
         script = Settings().boot_recovery_path
-        if ExecLocal().run(['execlocal', script] + sys.argv[1:]) != 0:
+        if ExecLocal().run(['execlocal', script] + self.argv[1:]) != 0:
             logging.critical('Error when running {}'.format(script))
             return
 

@@ -6,9 +6,9 @@ fish-init manifest {create|commit}
   * fish-manifest
 fish-init deploy {-f manifest.html|revert}
   * bash completion
- fish-init recovery
-   * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
-   * sudo reboot
+- fish-init recovery
+-    * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
+-    * sudo reboot
 - fish-init diff
 -  * dpkg-query -W -f='${Package} ${Version}\n'
 - fish-init ssh
@@ -16,7 +16,7 @@ fish-init deploy {-f manifest.html|revert}
 - fish-init umount
 fish-init scp
   * bash completion
-fish-init exec-local localscript [copy_back_file]
+- fish-init execlocal localscript -f [copy_back_file]
 fish-init install-recovery {*.fish*.gz, *.deb}
 fish-init uninstall-recovery {*.fish*.gz, *.deb}
 
