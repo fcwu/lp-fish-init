@@ -27,6 +27,7 @@ Depends: python (<< 3.0), python (>= 2.6),
  sshfs,
  fuse,
  wget,
- lp-cli (>> 0.4 )
+ lp-cli (>> 0.4 ),
+ ibs-cli (>= 0.9),
 Description: Provides fish-init command for OEM Dell enablement
  UNKNOWN

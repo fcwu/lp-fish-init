@@ -21,6 +21,14 @@ _fish_init()
             COMPREPLY=( $( compgen -W 'manifest.html revert' -- "$cur" ) )
             return 0
             ;;
+        download)
+            COMPREPLY=( $( compgen -W '-b -z help' -- "$cur" ) )
+            return 0
+            ;;
+        -z)
+            _filedir
+            return 0
+            ;;
 #        config)
 #            fish-init config help
 #            return 1
@@ -42,8 +50,8 @@ _fish_init()
 #            ;;
         *)
             COMPREPLY=( $( compgen -W 'config package openbug \
-                manifest diff mount umount execlocal diff deploy scp' \
-                recovery' \
+                manifest diff mount umount execlocal diff deploy scp \
+                recovery download' \
                 -- "$cur" ) )
             ;;
 

@@ -17,6 +17,8 @@ fish-init deploy {-f manifest.html|revert}
 fish-init scp
   * bash completion
 - fish-init execlocal localscript -f [copy_back_file]
+fish-init download [-b] [-z zsync_file]
+  * build before download
 fish-init install-recovery {*.fish*.gz, *.deb}
 fish-init uninstall-recovery {*.fish*.gz, *.deb}
 
