@@ -36,10 +36,7 @@ def exit_if_ne_0(ret):
 class Command(CommandBase):
     @property
     def script(self):
-        script = '/usr/share/fish-init/modaliases.sh'
-        if os.path.exists('./share/modaliases.sh'):
-            script = './share/modaliases.sh'
-        return script
+        return Settings().modalias
 
     @property
     def common_bug_path(self):

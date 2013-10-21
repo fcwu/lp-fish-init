@@ -19,6 +19,12 @@ import logging
 from settings import Settings
 from shellcommand import ShellCommand
 from time import sleep
+from glob import glob
+from os.path import join as pjoin
+
+
+class FailToBuild(Exception):
+    pass
 
 
 class Command(CommandBase):
@@ -37,58 +43,91 @@ class Command(CommandBase):
     def base_cmd(self):
         return 'ibs-cli -p ' + self.project + ' '
 
+    def wait_build_done(self, build_name):
+        while True:
+            logging.info('Wait build completed...')
+            status = self.build_status(build_name)
+            if status is None:
+                pass
+            if status == 'FAILED':
+                logging.critical('Failed to build')
+                raise FailToBuild()
+            if status == 'COMPLETED':
+                break
+            sleep(20)
+        logging.info('Build completed')
+
+    def build(self):
+        build_name_0 = self.get_latest_build()
+        logging.info('Ask to build project ' + self.project)
+        if ShellCommand(self.base_cmd + 'build').run().returncode != 0:
+            logging.critical('Failed to build')
+            raise FailToBuild()
+        while True:
+            logging.info('Wait to build...')
+            build_name = self.get_latest_build()
+            if build_name not in (build_name_0, 'None'):
+                break
+            sleep(20)
+        return build_name
+
+    def get_latest_build(self):
+        cmd = ShellCommand(self.base_cmd + 'list-builds').run()
+        if cmd.returncode != 0:
+            logging.critical('Failed to list builds')
+            return
+        build_names = []
+        for line in cmd.stdout.split('\n')[1:]:
+            fields = [t for t in line.split(' ') if t != '']
+            if len(fields) > 0:
+                build_names.append(fields[2])
+        build_names.sort()
+        return build_names[-1]
+
+    def build_status(self, build_name):
+        cmd = ShellCommand(self.base_cmd + 'list-builds').run()
+        if cmd.returncode != 0:
+            logging.critical('Failed to list builds')
+            return
+        for line in cmd.stdout.split('\n')[1:]:
+            fields = [t for t in line.split(' ') if t != '']
+            if fields[2] == build_name:
+                return fields[-1]
+        return None
+
     def download(self):
         try:
-            # list builds
-            cmd = ShellCommand(self.base_cmd + 'list-builds').run()
-            if cmd.returncode != 0:
-                logging.critical('Failed to list builds')
-                return
-            builds_0 = cmd.stdout.split('\n')
             # build if needed
             if '-b' in self.argv:
-                logging.info('Ask to build project ' + self.project)
-                if ShellCommand(self.base_cmd + 'build').run().returncode != 0:
-                    logging.critical('Failed to build')
-                    return
-            # detect finish
-            logging.info('Detecting...')
-            build_sn = None
-            line_before = None
-            is_completed = False
-            while not is_completed:
-                sleep(5)
-                cmd = ShellCommand(self.base_cmd + 'list-builds').run()
-                if cmd.returncode != 0:
-                    logging.critical('Failed to list builds')
-                    return
-                builds_1 = cmd.stdout.split('\n')
-                difference = set(builds_1) - set(builds_0)
-                if len(difference) == 0:
-                    logging.info('Waiting for build creating...')
-                    continue
-                #INFO - 20131017-2 - 2013-10-17T02:23:38 - 2013-10-17T02:26:58\
-                #        - COMPLETED
-                for line in difference:
-                    fields = [t for t in line.split(' ') if t != '']
-                    if build_sn is None:
-                        if fields[2] == 'None':
-                            break
-                        build_sn = fields[2]
-                        line_before = line
-                        logging.info('Build Name = {}'.format(build_sn))
-                        break
-                    if build_sn == fields[2]:
-                        if line_before != line:
-                            logging.info('Status changed: {}'.format(fields[-1]))
-                        if fields[-1] in ('COMPLETED', 'FAILED'):
-                            is_completed = True
-                        break
+                build_name = self.build()
+            else:
+                build_name = self.get_latest_build()
+            try:
+                self.wait_build_done(build_name)
+            except FailToBuild:
+                logging.critical('{} {} build is failed'.format(self.project,
+                                                                build_name))
+                return
             # download
-            cmd_str = self.base_cmd + '-b ' + build_sn + ' download'
-            cmd = ShellCommand(cmd_str).run()
-            if cmd.returncode != 0:
-                logging.critical('Failed to download')
+            build_name_fields = build_name.split('-')
+            while True:
+                logging.info('Try downloading... {} {}'.format(self.project,
+                                                               build_name))
+                cmd_str = self.base_cmd + '-b ' + build_name
+                if self.zsync_file is not None:
+                    cmd_str += ' -z ' + self.zsync_file
+                cmd_str += ' download'
+                ShellCommand(cmd_str).run()
+                files = glob(pjoin('download',
+                                   self.project,
+                                   build_name_fields[0],
+                                   build_name_fields[1],
+                                   'images', '*', '*.iso'))
+                if len(files) > 0:
+                    logging.info('Done: {}'.format(files[0]))
+                    break
+                logging.info('ISO is not ready')
+                sleep(30)
         except KeyboardInterrupt:
             logging.info('^c')
 
@@ -100,7 +139,8 @@ class Command(CommandBase):
         self.download()
 
     def help(self):
-        print('Usage: fish-init {} [-b] [-z zsync_base.iso]'.format(self.argv[0]))
+        print('Usage: fish-init {} [-b] [-z zsync_base.iso]'.format(
+            self.argv[0]))
         print('  download image and build if "-b" is specified')
 
         sys.exit(0)

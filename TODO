@@ -2,10 +2,10 @@
 - fish-init config tag ip
 - fish-init package
 - fish-init openbug
-fish-init manifest {create|commit}
-  * fish-manifest
-fish-init deploy {-f manifest.html|revert}
-  * bash completion
+- fish-init manifest {create|commit}
+-   * fish-manifest
+- fish-init deploy {-f manifest.html|revert}
+-   * bash completion
 - fish-init recovery
 -    * sudo grub-reboot "Restore Ubuntu 12.04 to factory state"
 -    * sudo reboot
@@ -14,11 +14,13 @@ fish-init deploy {-f manifest.html|revert}
 - fish-init ssh
 - fish-init mount
 - fish-init umount
-fish-init scp
-  * bash completion
+- fish-init scp
+-   * bash completion
 - fish-init execlocal localscript -f [copy_back_file]
-fish-init download [-b] [-z zsync_file]
-  * build before download
+- fish-init download [-b] [-z zsync_file]
+-   * build before download
+- fish-init search 8086
+- fish-init open
 fish-init install-recovery {*.fish*.gz, *.deb}
 fish-init uninstall-recovery {*.fish*.gz, *.deb}
 

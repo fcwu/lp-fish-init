@@ -113,6 +113,13 @@ class Settings(object):
     def pool_path(Self):
         return 'pool'
 
+    @property
+    def modalias(self):
+        script = '/usr/share/fish-init/modaliases.sh'
+        if os.path.exists('./share/modaliases.sh'):
+            script = './share/modaliases.sh'
+        return script
+
     def get(self, section, name):
         value = ''
         try:
