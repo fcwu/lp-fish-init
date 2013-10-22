@@ -82,6 +82,8 @@ class Command(CommandBase):
             if len(fields) > 0:
                 build_names.append(fields[2])
         build_names.sort()
+        if len(build_names) <= 0:
+            return None
         return build_names[-1]
 
     def build_status(self, build_name):

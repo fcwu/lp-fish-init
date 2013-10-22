@@ -29,8 +29,9 @@ class Command(CommandBase):
                                  Settings().fish_init_target))
         script = Settings().boot_recovery_path
         if ExecLocal().run(['execlocal', script] + self.argv[1:]) != 0:
-            logging.critical('Error when running {}'.format(script))
+            #logging.critical('Error when running {}'.format(script))
             return
+        logging.info('done: '.format(script))
 
     def run(self, argv):
         self.argv = argv

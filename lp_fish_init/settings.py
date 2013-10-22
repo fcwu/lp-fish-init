@@ -77,31 +77,31 @@ class Settings(object):
         version = Settings().bto_version
         if os.path.exists('./share/bto-' + version + '-filelist.txt'):
             return './share/bto-' + version + '-filelist.txt'
-        return '/usr/share/fish-init/bto-' + version + '-filelist.txt'
+        return '/usr/share/lp-fish-init/bto-' + version + '-filelist.txt'
 
     @property
     def recovery_filelist_path(self):
         if os.path.exists('./share/recovery-filelist.sh'):
             return './share/recovery-filelist.sh'
-        return '/usr/share/fish-init/recovery-filelist.sh'
+        return '/usr/share/lp-fish-init/recovery-filelist.sh'
 
     @property
     def recovery_deploy_path(self):
         if os.path.exists('./share/recovery-deploy.sh'):
             return './share/recovery-deploy.sh'
-        return '/usr/share/fish-init/recovery-deploy.sh'
+        return '/usr/share/lp-fish-init/recovery-deploy.sh'
 
     @property
     def recovery_remove_path(self):
         if os.path.exists('./share/recovery-remove.sh'):
             return './share/recovery-remove.sh'
-        return '/usr/share/fish-init/recovery-remove.sh'
+        return '/usr/share/lp-fish-init/recovery-remove.sh'
 
     @property
     def boot_recovery_path(self):
         if os.path.exists('./share/boot-recovery.py'):
             return './share/boot-recovery.py'
-        return '/usr/share/fish-init/boot-recovery.py'
+        return '/usr/share/lp-fish-init/boot-recovery.py'
 
     @property
     def fish_init_target(self):
@@ -115,10 +115,18 @@ class Settings(object):
 
     @property
     def modalias(self):
-        script = '/usr/share/fish-init/modaliases.sh'
+        script = '/usr/share/lp-fish-init/modaliases.sh'
         if os.path.exists('./share/modaliases.sh'):
             script = './share/modaliases.sh'
         return script
+
+    @property
+    def common_bug_path(self):
+        common_bug_path = '/usr/share/lp-fish-init/common-bugs.txt'
+        if os.path.exists('./share/common-bugs.txt'):
+            common_bug_path = './share/common-bugs.txt'
+        return common_bug_path
+
 
     def get(self, section, name):
         value = ''

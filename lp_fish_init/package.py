@@ -39,13 +39,6 @@ class Command(CommandBase):
         return Settings().modalias
 
     @property
-    def common_bug_path(self):
-        common_bug_path = '/usr/share/fish-init/common-bugs.txt'
-        if os.path.exists('./share/common-bugs.txt'):
-            common_bug_path = './share/common-bugs.txt'
-        return common_bug_path
-
-    @property
     def inputs(self):
         if hasattr(self, '_inputs'):
             return self._inputs
@@ -92,8 +85,8 @@ class Command(CommandBase):
 
         # common bugs
         lines = []
-        logging.info('Read common bugs from ' + self.common_bug_path)
-        with open(self.common_bug_path, 'r') as infile:
+        logging.info('Read common bugs from ' + Settings().common_bug_path)
+        with open(Settings().common_bug_path, 'r') as infile:
             lines += infile.readlines()
 
         # modaliases packages

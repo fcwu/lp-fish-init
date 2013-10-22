@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DEBUG = True
 import sys
+DEBUG = False if sys.argv[0] == '/usr/bin/fish-init' else True
 try:
     if DEBUG:
         raise ImportError()
@@ -27,7 +27,9 @@ from lp_fish_init.log import LoggingConfiguration
 import logging
 # Initialize log before import others script of lp_fish_init because there may
 # has scripts to initialize log prior to this
-LoggingConfiguration.set(logging.INFO, '/tmp/fish-init', False)
+LoggingConfiguration.set(logging.DEBUG if DEBUG else logging.INFO,
+                         '/tmp/fish-init',
+                         False)
 
 from lp_fish_init import command
 from lp_fish_init import *

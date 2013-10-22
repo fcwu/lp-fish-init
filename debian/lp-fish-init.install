@@ -1,4 +1,7 @@
 fish-init.completion etc/bash_completion.d/
 fish-init-target usr/bin/
 share/fish-init* usr/share/lp-fish-init/
-share/modaliases.sh usr/share/lp-fish-init/
+share/common-bugs.txt usr/share/lp-fish-init/
+share/*.py usr/share/lp-fish-init/
+share/*.sh usr/share/lp-fish-init/
+share/bto*.txt usr/share/lp-fish-init/
