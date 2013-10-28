@@ -18,12 +18,13 @@ from command import CommandBase
 from settings import Settings
 import subprocess
 import logging
+import os
 
 
 class Command(CommandBase):
     def ssh(self):
         settings = Settings()
-        cmd = ['ssh', settings.ip, '-q', '-i',
+        cmd = ['ssh', '-F', os.getcwd(), settings.ip, '-q', '-i',
                '/usr/share/lp-fish-init/fish-init',
                '-o', 'StrictHostKeyChecking=no',
                '-o', 'UserKnownHostsFile=/dev/null']

@@ -37,7 +37,7 @@ class Command(CommandBase):
             except OSError:
                 Umount().run(['umount'])
         settings = Settings()
-        cmd = ['sshfs', settings.ip + ':/', 'mnt',
+        cmd = ['sshfs', '-F', os.getcwd(), settings.ip + ':/', 'mnt',
                '-o', 'IdentityFile=/usr/share/lp-fish-init/fish-init',
                '-o', 'StrictHostKeyChecking=no',
                '-o', 'UserKnownHostsFile=/dev/null']
