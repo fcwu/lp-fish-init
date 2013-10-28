@@ -79,7 +79,7 @@ class Command(CommandBase):
         build_names = []
         for line in cmd.stdout.split('\n')[1:]:
             fields = [t for t in line.split(' ') if t != '']
-            if len(fields) > 0:
+            if len(fields) > 0 and fields[2].startswith('201'):
                 build_names.append(fields[2])
         build_names.sort()
         if len(build_names) <= 0:
