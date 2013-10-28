@@ -17,10 +17,13 @@ import sys
 from command import CommandBase
 import subprocess
 import logging
+from ssh import Command as Ssh
 
 
 class Command(CommandBase):
     def umount(self):
+        Ssh().run(['ssh', 'sudo', 'umount', '/recovery'])
+        Ssh().run(['ssh', 'sudo', 'rmdir', '/recovery'])
         cmd = ['fusermount', '-u', 'mnt']
         logging.debug(' '.join(cmd))
         return subprocess.call(cmd)

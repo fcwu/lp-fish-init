@@ -20,6 +20,7 @@ from settings import Settings
 import subprocess
 import logging
 from umount import Command as Umount
+from ssh import Command as Ssh
 
 
 class Command(CommandBase):
@@ -42,7 +43,21 @@ class Command(CommandBase):
                '-o', 'StrictHostKeyChecking=no',
                '-o', 'UserKnownHostsFile=/dev/null']
         logging.debug(' '.join(cmd))
-        return subprocess.call(cmd)
+        result = subprocess.call(cmd)
+        logging.info('mount / to mnt: {}'.format(result))
+        if result != 0:
+            return result
+        # FIXME hard code to recovery partition to sda2
+        Ssh().run(['ssh', 'sudo', 'mkdir', '-p', '/recovery'])
+        for rp in ('/dev/sda2', '/dev/sda3'):
+            cmd = ['ssh', 'sudo', 'mountpoint -q /recovery || sudo mount -o uid=$UID {} /recovery'.format(rp)]
+            Ssh().run(cmd)
+            if os.path.exists(os.path.join('mnt', 'recovery', 'bto.xml')):
+                logging.info('mount {} to mnt/recovery: {}'.format(rp, result))
+                break
+        else:
+            logging.warn('failed to mount recovery partition')
+        return 0
 
     def run(self, argv):
         self.argv = argv
