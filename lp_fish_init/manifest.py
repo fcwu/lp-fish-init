@@ -20,7 +20,7 @@ import subprocess
 from settings import Settings
 import os
 from shellcommand import ShellCommand
-#from lp_fish_tools.BzrProject import sourceBranch, ubuntuRelease
+from lp_fish_tools.SomervilleShare import SomervilleShare
 
 
 class Command(CommandBase):
@@ -66,12 +66,39 @@ class Command(CommandBase):
         except Exception as e:
             logging.error(str(e))
 
+    def download_manifest(self, prefix):
+        svshare = SomervilleShare()
+        platform = Settings().tag
+        version_number = 0
+        # X version
+        while True:
+            version = '{}{:02d}'.format(prefix, version_number)
+            version_number += 1
+            filename = '{}_{}.html'.format(platform, version)
+            if os.path.exists(filename):
+                logging.info('file exists {} - Skip'.format(filename))
+                continue
+            try:
+                logging.info('Downloading {} {}'.format(platform, version))
+                svshare.download_manifest(platform, version)
+            except:
+                logging.info('file not found {}'.format(version))
+                if os.path.exists(filename):
+                    os.unlink(filename)
+                break
+
+    def sync(self):
+        self.download_manifest('X')
+        self.download_manifest('A')
+
     def run(self, argv):
         self.argv = argv
         if argv[-1] == 'create':
             self.create()
         elif argv[-1] == 'commit':
             self.commit()
+        elif argv[-1] == 'sync':
+            self.sync()
         else:
             self.help()
             return
@@ -81,5 +108,7 @@ class Command(CommandBase):
         print('  create temporary manifest')
         print('Usage: fish-init {} commit'.format(self.argv[0]))
         print('  commit manifest')
+        print('Usage: fish-init {} sync'.format(self.argv[0]))
+        print('  download all manifest')
 
         sys.exit(0)
