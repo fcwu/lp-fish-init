@@ -44,6 +44,8 @@ class Command(CommandBase):
                 result['add'].append(item)
         for item in bto:
             result['delete'].append(item)
+        for key in result:
+            result[key].sort()
         return result
 
     def run(self, argv):
