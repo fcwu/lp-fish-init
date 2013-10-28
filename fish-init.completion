@@ -11,14 +11,15 @@ _fish_init()
 
     case $prev in
         manifest)
-            COMPREPLY=( $( compgen -W 'create commit' -- "$cur" ) )
+            COMPREPLY=( $( compgen -W 'create commit sync' -- "$cur" ) )
             ;;
         scp)
             _filedir
             return 0
             ;;
         deploy)
-            COMPREPLY=( $( compgen -W 'manifest.html revert' -- "$cur" ) )
+#COMPREPLY=( $( compgen -W 'manifest.html revert' -- "$cur" ) )
+            _filedir
             return 0
             ;;
         download)
