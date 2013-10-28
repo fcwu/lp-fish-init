@@ -1,3 +1,20 @@
+lp-fish-init (0.3) precise; urgency=low
+
+  * Update to git ce13e04
+      - ce13e04 Update bash completion
+      - 997604c Add mail function
+      - 251eabf Add mount recovery
+      - 273815f Fix recovery injection error if os-post is not exist
+      - f2e1a68 Fix ssh/mount error if there is a special .ssh/config
+      - 71817e5 Add manifest sync function
+      - 2f25897 Fix download error if some builds failed
+      - 523fa36 Add diff result sorted
+      - 6113028 Fix deploy function error if pool folder not exist
+      - 2cad2bb Refactor codename to Settings
+
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 28 Oct 2013 17:47:34 +0800
+
 lp-fish-init (0.2) precise; urgency=low
 
   * Fix path finding issue
