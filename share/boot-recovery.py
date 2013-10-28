@@ -65,7 +65,7 @@ ubiquity user-setup/allow-password-weak boolean true
 EOF
 fi
 
-mkdir -p scripts/chroot-scripts/os-post/
+mkdir -p ${MOUNTDIR}/scripts/chroot-scripts/os-post/
 cat <<EOF > ${MOUNTDIR}/scripts/chroot-scripts/os-post/00-build-dell-recovery-part
 #!/usr/bin/python
 import Dell.recovery_common as magic
@@ -84,6 +84,7 @@ if rpart:
     os.chmod('/etc/grub.d/99_dell_recovery', 0755)
     subprocess.call(['update-grub'])
 EOF
+mkdir -p ${MOUNTDIR}/scripts/chroot-scripts/os-post/
 cp -v /tmp/fish-init-target ${MOUNTDIR}/scripts/chroot-scripts/os-post/01-fish-init-target
 bye 0
 '''
