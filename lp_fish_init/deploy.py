@@ -69,6 +69,8 @@ class Command(CommandBase):
         return self.argv[-1]
 
     def download_verify_fixes(self, f):
+        if not os.path.exists(Settings().pool_path):
+            os.makedirs(Settings().pool_path)
         localname = os.path.join(Settings().pool_path, f.name)
         downloaded = False
         for i in xrange(0, 2):
