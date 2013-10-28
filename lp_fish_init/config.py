@@ -25,6 +25,8 @@ class Command(CommandBase):
     def set(self):
         s = Settings()
         s.ip = self.argv[1]
+        if s.ip.find('@') == -1:
+            s.ip = 'u@' + s.ip
         s.tag = self.argv[2]
         s.commit()
         self.get()

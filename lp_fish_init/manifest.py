@@ -48,15 +48,15 @@ class Command(CommandBase):
         try:
             logging.info('Commit manifest with tag ' + Settings().tag)
             subprocess.check_call(['fish-manifest', Settings().tag,
-                                   '-r', 'precise', '-c'])
+                                   '-r', Settings().codename, '-c'])
             #tag = Settings().tag
             #ubuntuRelease('precise')
             #source_branch = sourceBranch(tag)
             #codename = os.path.basename(source_branch)
             #url = source_branch
             #logging.info('codename:               ' + codename)
-            #logging.info('Project Title:          Dell {} {}'.format('precise',
-            #                                                         tag))
+            #logging.info('Project Title:          Dell {} {}'.format('precise'
+            #                                                         ,tag))
             #logging.info('Project Group:          Somerville')
             #logging.info('Architecture:           amd64')
             #logging.info('Launchpad Project:      dell')

@@ -37,7 +37,7 @@ class Command(CommandBase):
 
     @property
     def project(self):
-        return 'dell-bto-precise-' + Settings().tag
+        return 'dell-bto-' + Settings().codename + '-' + Settings().tag
 
     @property
     def base_cmd(self):

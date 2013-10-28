@@ -127,6 +127,9 @@ class Settings(object):
             common_bug_path = './share/common-bugs.txt'
         return common_bug_path
 
+    @property
+    def codename(Self):
+        return 'precise'
 
     def get(self, section, name):
         value = ''
