@@ -14,20 +14,22 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-DEBUG = False if sys.argv[0] == '/usr/bin/fish-init' else True
+import os
+DEBUG_LOG = True if 'LP_FISH_INIT_LOG' in os.environ else False
+DEBUG_LIB = True if 'LP_FISH_INIT_LIB' in os.environ else False
 try:
-    if DEBUG:
+    if DEBUG_LIB:
         raise ImportError()
     import lp_fish_init as fi
 except ImportError:
-    sys.path = ['.'] + sys.path
+    sys.path = [os.environ['LP_FISH_INIT_LIB']] + sys.path
     import lp_fish_init as fi
 
 from lp_fish_init.log import LoggingConfiguration
 import logging
 # Initialize log before import others script of lp_fish_init because there may
 # has scripts to initialize log prior to this
-LoggingConfiguration.set(logging.DEBUG if DEBUG else logging.INFO,
+LoggingConfiguration.set(logging.DEBUG if DEBUG_LOG else logging.INFO,
                          '/tmp/fish-init',
                          False)
 
