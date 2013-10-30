@@ -27,5 +27,9 @@ class Command(CommandBase):
     def help(self):
         print('Usage: fish-init {}'.format(self.argv[0]))
         print('  Open modalias service in browser')
+        print('Usage: fish-init {} <1234567>'.format(self.argv[0]))
+        print('  Open modalias service in browser')
+        print('Usage: fish-init {} <platform-tag>'.format(self.argv[0]))
+        print('  Open modalias service in browser')
 
         sys.exit(0)

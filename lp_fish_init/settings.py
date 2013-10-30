@@ -128,6 +128,13 @@ class Settings(object):
         return common_bug_path
 
     @property
+    def bto_pkgs_path(self):
+        version = self.bto_version
+        if os.path.exists('./share/bto-' + version + '-pkg.txt'):
+            return './share/bto-' + version + '-pkg.txt'
+        return '/usr/share/lp-fish-init/bto-' + version + '-pkg.txt'
+
+    @property
     def codename(Self):
         return 'precise'
 

@@ -1,3 +1,10 @@
+lp-fish-init (0.3dev1) precise; urgency=low
+
+  * Update bash completion
+  * Command fix and open is not ready
+
+ -- Doro Wu <doro.wu@canonical.com>  Mon, 28 Oct 2013 17:47:34 +0800
+
 lp-fish-init (0.3) precise; urgency=low
 
   * Update to git ce13e04

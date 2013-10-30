@@ -52,7 +52,7 @@ _fish_init()
         *)
             COMPREPLY=( $( compgen -W 'config package openbug \
                 manifest diff mount umount execlocal diff deploy scp \
-                recovery download open search' \
+                recovery download open search mail fix' \
                 -- "$cur" ) )
             ;;
 
