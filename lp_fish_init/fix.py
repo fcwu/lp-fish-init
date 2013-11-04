@@ -13,6 +13,17 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+## TEST cases
+# [O] f only in SShare if and only if f is FISH tarball
+# [O] f only in SShare if and only if f is deb
+# [O] f only in MA
+# [O] f only in local (pool)
+# [O] f only in local (pwd)
+# [O] f depends broken
+# [?] f depends broken, dependance in MA
+# [O] f depends broken, dependance in local
+# [O] f depends broken, and not found
+
 import sys
 from command import CommandBase
 from settings import Settings
@@ -140,22 +151,15 @@ def compare_dpkg_version(d1, op, d2):
     #                       < 0 if 1 < 2
     # op: < << <= = >= >> >
     # op: lt, le, eq, ne, ge, gt
-    if op in ('<', '<<', 'lt'):
-        if compare_result < 0:
-            return True
-    elif op in ('<=', 'le'):
-        if compare_result <= 0:
-            return True
-    elif op in ('=', 'eq'):
-        if compare_result != 0:
-            return True
-    elif op in ('>=', 'ge'):
-        if compare_result >= 0:
-            return True
-    elif op in ('>', '>>', 'gt'):
-        if compare_result > 0:
-            return True
-    else:
+    f = {}
+    f['<'] = f['<<'] = f['lt'] = lambda score: score < 0
+    f['<='] = f['le'] = lambda score: score <= 0
+    f['='] = f['eq'] = lambda score: score == 0
+    f['>='] = f['ge'] = lambda score: score >= 0
+    f['>'] = f['>>'] = f['ge'] = lambda score: score > 0
+    try:
+        return f[op](compare_result)
+    except:
         raise InvalidDpkgCompareOp(d1, op, d2)
     return False
 
@@ -198,10 +202,12 @@ class SomervilleShare(SShare):
             raise PackageNotFoundError(package)
         return '_'.join(candidates[0]) + '.deb'
 
-    def package_exist(self, package):
-        if len(self.search_package(package)) <= 0:
-            raise PackageNotFoundError(package)
-        return True
+    def file_exist(self, filename):
+        filenames = self.list(pjoin('pool', filename[0]))
+        for f in filenames:
+            if f == filename:
+                return True
+        raise PackageNotFoundError(filename)
 
     def search_package(self, package):
         logging.info('Searching {} in SomervilleShare'.format(package))
@@ -212,8 +218,6 @@ class SomervilleShare(SShare):
             search_key += '_'
         #logging.debug('In pool {}: {}'.format(search_key, filenames))
         for f in filenames:
-            if not f.endswith('.deb'):
-                continue
             if f.startswith(search_key):
                 name, ver, arch = f.rstrip('.deb').split('_', 3)
                 if name == package or search_key == f:
@@ -225,13 +229,20 @@ class SomervilleShare(SShare):
         ''' Find the latest package or check existent in Somerville Share
         '''
         try:
-            if not name.endswith('.deb'):
+            if not name.endswith('.deb') and not name.endswith('.tar.gz'):
                 name = self.find_latest_package(name)
             else:
-                self.package_exist(name)
+                self.file_exist(name)
         except PackageNotFoundError:
             return None
         return name
+
+    def match_package(self, name, op, ver):
+        for f in self.search_package(name):
+            iname, iver, iarch = f
+            if compare_dpkg_version(iver, op, ver):
+                return '_'.join(f) + '.deb'
+        return None
 
 
 class ModaliasesService(object):
@@ -279,19 +290,32 @@ class ModaliasesService(object):
             logging.debug('{}'.format(e))
             raise DownloadError(filename)
 
+    def match_package(self, name, op, ver):
+        for f in self.search_package(name):
+            iname, iver, iarch = f
+            if compare_dpkg_version(iver, op, ver):
+                return '_'.join(f) + '.deb'
+        return None
+
 
 class LocalPool(object):
     @property
+    def pools(self):
+        dirs = ['.']
+        if os.path.exists(Settings().pool_path):
+            dirs.append(Settings().pool_path)
+        return dirs
+
+    @property
     def package_list(self):
-        if hasattr(self, '_package_list'):
-            return self._package_list
+        def iterate_dir(path):
+            for dirname, dirnames, filenames in os.walk(path):
+                for filename in filenames:
+                    if filename.endswith('.deb'):
+                        self._package_list.append(filename)
+
         self._package_list = []
-        if not os.path.exists(Settings().pool_path):
-            return self._package_list
-        for dirname, dirnames, filenames in os.walk(Settings().pool_path):
-            for filename in filenames:
-                if filename.endswith('.deb'):
-                    self._package_list.append(filename)
+        map(iterate_dir, self.pools)
         return self._package_list
 
     def search_package(self, package):
@@ -309,6 +333,20 @@ class LocalPool(object):
                     candidates.append((name, ver, arch))
         candidates = sort_dpkg(candidates)
         return candidates
+
+    def realpath(self, package):
+        for basedir in ('./', Settings().pool_path):
+            path = pjoin(basedir, package)
+            if os.path.exists(path):
+                return os.path.normpath(path)
+        raise PackageNotFoundError(package)
+
+    def match_package(self, name, op, ver):
+        for f in self.search_package(name):
+            iname, iver, iarch = f
+            if compare_dpkg_version(iver, op, ver):
+                return '_'.join(f) + '.deb'
+        return None
 
 
 class Command(CommandBase):
@@ -332,6 +370,19 @@ class Command(CommandBase):
             return self._categories
         self._prepare_arguments()
         return self._categories
+
+    @property
+    def dry_run(self):
+        if hasattr(self, '_dry_run'):
+            return self._dry_run
+        self._prepare_arguments()
+        return self._dry_run
+
+    @property
+    def fixes_broken(self):
+        if hasattr(self, '_fixes_broken'):
+            return self._fixes_broken
+        return []
 
     @property
     def svshare(self):
@@ -374,33 +425,63 @@ class Command(CommandBase):
         self._bugs = []
         self._fixes = []
         self._categories = []
+        self._dry_run = False
         skip = 0
-        for arg in self.argv[1:]:
+        parameters = self.argv[1:]
+        for arg in enumerate(parameters):
             if skip > 0:
-                self._categories.append(arg)
                 skip -= 1
                 continue
-            if arg == '-c':
+            if arg[1] == '-c':
                 skip = 1
+                self._categories.append(parameters[arg[0] + 1])
+                continue
+            if arg[1] == '-f':
+                skip = 1
+                self._fixes.append(parameters[arg[0] + 1])
+                continue
+            if arg[1] == '-n':
+                self._dry_run = True
                 continue
             try:
-                self._bugs.append(int(arg))
+                self._bugs.append(int(arg[1]))
             except ValueError:
-                self._fixes.append(arg)
+                self._fixes.append(arg[1])
+
+    def upload_package(self, f):
+        if self.upload_package_from_ma(f):
+            return True
+        if self.upload_package_from_local(f):
+            return True
+        return False
+
+    def upload_package_from_local(self, filename):
+        candidates = self.localpool.search_package(filename)
+        if len(candidates) <= 0:
+            return False
+        realpath = self.localpool.realpath(filename)
+        if realpath != filename:
+            shutil.copyfile(realpath, filename)
+        logging.info('Uploading {}'.format(filename))
+        self.svshare.upload_fish(filename)
+        if realpath != filename:
+            os.unlink(filename)
+        return filename
 
     def upload_package_from_ma(self, filename):
-        '''
-        '''
         candidates = self.maservice.search_package(filename)
         if len(candidates) <= 0:
-            raise PackageNotFoundError(filename)
+            return False
         self.maservice.download_package(filename)
         logging.info('Uploading {}'.format(filename))
         self.svshare.upload_fish(filename)
-        os.rename(filename, pjoin(Settings().pool_path, filename))
+        dest = pjoin(Settings().pool_path, filename)
+        if not os.path.exists(dest):
+            os.makedirs(Settings().pool_path)
+        os.rename(filename, dest)
         return filename
 
-    def broken_package_depends(self, package):
+    def broken_depends(self, package):
         dest_basepath = Settings().pool_path
         if not os.path.exists(dest_basepath):
             os.mkdir(dest_basepath)
@@ -410,90 +491,89 @@ class Command(CommandBase):
             os.rename(package, filename)
         return ValidateDepend(self.base_pkgs).validate(filename)
 
+    def fix_broken_depends(self, fix, rule):
+        fixes = []
+        for item in ValidateDepend.split_rule2item(rule):
+            name, op, ver = ValidateDepend.split_item(item)
+            path = self.svshare.match_package(name, op, ver)
+            if path is not None:
+                logging.info('Add package "{}" because matching rule "{}"'.
+                             format(path, rule))
+                fixes.append(path)
+                break
+            path = self.maservice.match_package(name, op, ver)
+            if path is not None:
+                logging.info('Add package "{}" because matching rule "{}"'.
+                             format(path, rule))
+                self.upload_package_from_ma(path)
+                fixes.append(path)
+                break
+            path = self.localpool.match_package(name, op, ver)
+            if path is not None:
+                r = raw_input('Find {}. Use it (Y/n)? '.format(path))
+                if r.lower() == 'n':
+                    continue
+                self.upload_package_from_local(path)
+                fixes.append(path)
+                break
+        else:
+            raise BrokenDependsError('Fix "{}" dependence broken: "{}"'.
+                                     format(fix, rule))
+        return fixes
+
+    def fix_commit(self):
+        fixes_resolved = self.fixes_broken
+        logging.info('fixes: ' + str(self.fixes))
+        logging.info('fixes automatically resolved: ' + str(fixes_resolved))
+        logging.info('bugs: ' + str(self.bugs))
+        logging.info('categories: ' + str(self.categories))
+        if len(fixes_resolved) > 0:
+            print '!! Adding following dependence packages...'
+            for f in fixes_resolved:
+                print '  ' + f
+            r = raw_input('Continues (Y/n)? ')
+            if r.lower() == 'n':
+                return
+        cmd = ['fish-fix-noupload']
+        for c in self.categories:
+            cmd += ['-c', c]
+        for c in self.fixes + fixes_resolved:
+            cmd += ['-f', c]
+        cmd += [str(b) for b in self.bugs]
+        logging.debug(cmd)
+        if not self.dry_run:
+            subprocess.call(cmd)
+
     def fix(self):
         logging.debug('fixes: ' + str(self.fixes))
         logging.debug('bugs: ' + str(self.bugs))
         logging.debug('categories: ' + str(self.categories))
         svshare = self.svshare
         fixes = self.fixes
-        fixes_applied = []
 
         # upload
         for fix in enumerate(fixes):
-            logging.info('Checking fix `{}` in somerville share'.format(fix[1]))
-            fixes[fix[0]] = f = svshare.formalize_package_name(fix[1])
+            logging.info('Checking fix `{}` in SomervilleShare'.format(fix[1]))
+            f = svshare.formalize_package_name(fix[1])
             if f is not None:
+                fixes[fix[0]] = f
                 continue
-            logging.warn('Package `{}` not found in somerville share'.format(fix[1]))
-            self.upload_package_from_ma(fix[1])
+            logging.warn('Package "{}" not found in SomervilleShare'.
+                         format(fix[1]))
+            if not self.upload_package(fix[1]):
+                raise PackageNotFoundError(fix[1])
 
         # complete fixes with broken packages
+        self._fixes_broken = []
         for fix in fixes:
+            if not fix.endswith('.deb'):
+                continue
             logging.info('Checking dependences `{}`'.format(fix))
-            for rule in self.broken_package_depends(fix):
+            for rule in self.broken_depends(fix):
                 logging.info('Broken rule: {}'.format(rule))
-                next_rule = False
-                for item in ValidateDepend.split_rule2item(rule):
-                    name, op, ver = ValidateDepend.split_item(item)
-                    # Somerville Share
-                    for f in self.svshare.search_package(name):
-                        iname, iver, iarch = f
-                        if compare_dpkg_version(iver, op, ver):
-                            path = '_'.join(f) + '.deb'
-                            logging.info('Add package `{}` because matching rule `{}`'.format(path, rule))
-                            fixes_applied.append(path)
-                            next_rule = True
-                            break
-                    if next_rule:
-                        break
-                    for f in self.maservice.search_package(name):
-                        iname, iver, iarch = f
-                        if compare_dpkg_version(iver, op, ver):
-                            path = '_'.join(f) + '.deb'
-                            logging.info('Add package `{}` because matching rule `{}`'.format(path, rule))
-                            logging.info('Uploading...')
-                            self.upload_package_from_ma(path)
-                            fixes_applied.append(path)
-                            next_rule = True
-                            break
-                    if next_rule:
-                        break
-                    for f in self.localpool.search_package(name):
-                        iname, iver, iarch = f
-                        if compare_dpkg_version(iver, op, ver):
-                            path = '_'.join(f) + '.deb'
-                            realpath = os.path.join(Settings().pool_path, path)
-                            r = raw_input('Find {}. Use it (Y/n)? '.format(realpath))
-                            if r.lower() == 'n':
-                                continue
-                            shutil.copyfile(realpath, path)
-                            self.svshare.upload_fish(path)
-                            os.unlink(path)
-                            fixes_applied.append(path)
-                            next_rule = True
-                    if next_rule:
-                        break
-                else:
-                    raise BrokenDependsError('Fix `{}` dependence broken: `{}`'.format(fix, rule))
-        logging.info('fixes: ' + str(self.fixes))
-        logging.info('auto resolved fixes: ' + str(fixes_applied))
-        logging.info('bugs: ' + str(self.bugs))
-        logging.info('categories: ' + str(self.categories))
-        cmd = ['fish-fix']
-        for c in self.categories:
-            cmd += ['-c', c]
-        for c in self.fixes + fixes_applied:
-            cmd += ['-f', c]
-        cmd += [str(b) for b in self.bugs]
-        if len(fixes_applied) > 0:
-            print '!! Adding following dependence packages...'
-            for f in fixes_applied:
-                print '  ' + f
-            r = raw_input('Continues (Y/n)? ')
-            if r.lower() == 'n':
-                return
-        logging.debug(cmd)
-        subprocess.call(cmd)
+                self._fixes_broken += self.fix_broken_depends(fix, rule)
+
+        self.fix_commit()
         return
 
     def run(self, argv):
@@ -502,13 +582,19 @@ class Command(CommandBase):
             self.help()
             return
         try:
+            if len(self.bugs) <= 0:
+                self.help()
+                return
             return self.fix()
         except Exception as e:
             logging.critical(e)
 
     def help(self):
-        print('Usage: fish-init {} [-c category] file1 [file2 ...] bug_num1 [bug_num2 ...]'.format(
+        print('Usage: fish-init {} [-n] [-c category] file1 [file2 ...] '
+              'bug_num1 [bug_num2 ...]'.format(
               self.argv[0]))
         print '  fix bugs'
+        print 'Options:'
+        print '  -n: dry run'
 
         sys.exit(0)
