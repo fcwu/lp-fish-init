@@ -22,7 +22,18 @@ import webbrowser
 class Command(CommandBase):
     def run(self, argv):
         self.argv = argv
-        webbrowser.open(Settings().ma_server_address)
+        if len(self.argv) <= 1:
+            webbrowser.open(Settings().ma_server_address)
+            return
+        try:
+            bug_num = int(self.argv[1])
+            webbrowser.open('https://bugs.launchpad.net/dell/+bug/{}'
+                            .format(bug_num))
+            return
+        except ValueError:
+            pass
+        webbrowser.open('https://bugs.launchpad.net/dell/+bugs?field.tag={}'
+                        .format(self.argv[1]))
 
     def help(self):
         print('Usage: fish-init {}'.format(self.argv[0]))
